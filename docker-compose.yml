@@ -1,0 +1,62 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/django
+    ports:
+      - 8000:8000
+    container_name: django_postgres_mysql
+    command: python manage.py runserver 0.0.0.0:8000
+    
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - django_db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    container_name: postgres_django
+    environment:
+      POSTGRES_PASSWORD: django_pass
+      POSTGRES_USER: postgres
+      POSTGRES_DB: vehicles_db
+      POSTGRES_INITDB_ARGS: --data-checksums
+
+    # mysql image
+    # image: mysql:latest
+    # command: --default-authentication-plugin=mysql_native_password
+    # restart: always
+    # environment:
+    #   MYSQL_DATABASE: 'vehicles_db'
+    #   MYSQL_USER: 'user'
+    #   MYSQL_PASSWORD: 'django_pass'
+    #   MYSQL_ROOT_PASSWORD: 'root'
+    #   # MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    # ports:
+    #   - '3306:3306'
+    # expose:
+    #   - '3306'
+    #   # Where our data will be persisted
+    # volumes:
+    #   - mysql-django-db:/var/lib/mysql
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8060:80
+    environment:
+      - PMA_ARBITRARY=1
+volumes:
+  - mysql-django-db:
+  - django_db:
+    
